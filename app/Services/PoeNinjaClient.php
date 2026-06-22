@@ -22,7 +22,7 @@ class PoeNinjaClient
         'LiquidEmotions',
         'Catalysts',
         'Verisium',
-        'AbyssalBones',
+        'Abyss',
     ];
 
     public function getCategories(): array
