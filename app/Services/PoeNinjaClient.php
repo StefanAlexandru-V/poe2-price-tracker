@@ -76,14 +76,13 @@ class PoeNinjaClient
     }
 
     /**
-     * Extract item metadata from the core.items array in a response.
-     * poe.ninja only includes reference currencies there (divine, chaos, exalted),
-     * so most items just have a slug id with no display name in this endpoint.
+     * Extract item metadata from the response.
+     * The 'items' array has the full list with names and icons.
      */
     public function extractItemMeta(array $response): array
     {
         $meta = [];
-        foreach ($response['core']['items'] ?? [] as $item) {
+        foreach ($response['items'] ?? [] as $item) {
             $meta[$item['id']] = [
                 'name' => $item['name'],
                 'image' => $item['image'] ?? null,

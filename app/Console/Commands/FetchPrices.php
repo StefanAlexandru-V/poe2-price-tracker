@@ -80,6 +80,14 @@ class FetchPrices extends Command
             ->first();
 
         if ($existing) {
+            // backfill icon/name if we didn't have it before
+            $metaEntry = $meta[$ninjaId] ?? null;
+            if ($metaEntry && !$existing->icon_url && $metaEntry['image']) {
+                $existing->update([
+                    'icon_url' => $metaEntry['image'],
+                    'name' => $metaEntry['name'] ?? $existing->name,
+                ]);
+            }
             return $existing;
         }
 
