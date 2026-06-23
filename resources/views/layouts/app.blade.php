@@ -30,9 +30,14 @@
                 @endif
                 @auth
                     <span class="text-gray-400">{{ auth()->user()->name }}</span>
-                    <a href="/alerts" class="text-gray-400 hover:text-white">Alerts</a>
+                    <a href="{{ route('alerts.index') }}" class="text-gray-400 hover:text-white">Alerts</a>
+                    <form method="POST" action="{{ route('logout') }}" class="inline">
+                        @csrf
+                        <button class="text-gray-500 hover:text-white">Logout</button>
+                    </form>
                 @else
-                    <a href="/login" class="text-gray-400 hover:text-white">Login</a>
+                    <a href="{{ route('login') }}" class="text-gray-400 hover:text-white">Login</a>
+                    <a href="{{ route('register') }}" class="text-gray-400 hover:text-white">Register</a>
                 @endauth
             </div>
         </div>
