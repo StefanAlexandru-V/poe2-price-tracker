@@ -33,7 +33,9 @@ jobs:
 
           echo "--- Pulling latest code"
           if [ ! -d .git ]; then
-            git clone https://github.com/StefanAlexandru-V/poe2-price-tracker.git .
+            git clone https://github.com/StefanAlexandru-V/poe2-price-tracker.git /tmp/poe2-src
+            cp -r /tmp/poe2-src/. .
+            rm -rf /tmp/poe2-src
           else
             git pull origin main
           fi
