@@ -18,7 +18,7 @@ RUN composer install --no-dev --no-scripts --no-autoloader
 COPY . .
 RUN composer dump-autoload --optimize
 
-RUN php artisan config:clear
+RUN touch database/database.sqlite
 
 EXPOSE 8000
 
