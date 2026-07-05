@@ -41,9 +41,11 @@ jobs:
           fi
 
           echo "--- Building and starting containers"
-          touch database/database.sqlite
           docker compose build --quiet
           docker compose up -d
+
+          echo "--- Waiting for postgres"
+          sleep 5
 
           echo "--- Running migrations"
           docker compose exec -T app php artisan migrate --force

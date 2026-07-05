@@ -33,6 +33,7 @@ systemctl reload caddy
 echo "==> Writing .env"
 if [ ! -f /opt/poe2-prices/.env ]; then
   APP_KEY=$(openssl rand -base64 32)
+  DB_PASS=$(openssl rand -hex 16)
   cat > /opt/poe2-prices/.env << EOF
 APP_NAME="PoE2 Price Tracker"
 APP_ENV=production
@@ -44,7 +45,12 @@ LOG_CHANNEL=stack
 LOG_STACK=single
 LOG_LEVEL=error
 
-DB_CONNECTION=sqlite
+DB_CONNECTION=pgsql
+DB_HOST=db
+DB_PORT=5432
+DB_DATABASE=poe2prices
+DB_USERNAME=poe2
+DB_PASSWORD=${DB_PASS}
 
 SESSION_DRIVER=redis
 SESSION_LIFETIME=120
@@ -56,7 +62,7 @@ REDIS_CLIENT=phpredis
 REDIS_HOST=redis
 REDIS_PORT=6379
 EOF
-  echo "Generated .env"
+  echo "Generated .env with DB_PASSWORD=${DB_PASS}"
 fi
 
 echo "==> Server setup complete"

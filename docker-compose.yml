@@ -6,8 +6,7 @@ services:
     env_file: .env
     depends_on:
       - redis
-    volumes:
-      - ./database/database.sqlite:/app/database/database.sqlite
+      - db
     restart: unless-stopped
 
   worker:
@@ -16,8 +15,7 @@ services:
     env_file: .env
     depends_on:
       - redis
-    volumes:
-      - ./database/database.sqlite:/app/database/database.sqlite
+      - db
     restart: unless-stopped
 
   scheduler:
@@ -26,8 +24,17 @@ services:
     env_file: .env
     depends_on:
       - redis
+      - db
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: poe2prices
+      POSTGRES_USER: poe2
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
     volumes:
-      - ./database/database.sqlite:/app/database/database.sqlite
+      - pg_data:/var/lib/postgresql/data
     restart: unless-stopped
 
   redis:
@@ -37,4 +44,5 @@ services:
     restart: unless-stopped
 
 volumes:
+  pg_data:
   redis_data:
