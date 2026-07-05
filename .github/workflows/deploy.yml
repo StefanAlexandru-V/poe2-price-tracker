@@ -51,8 +51,11 @@ jobs:
           echo "--- Seeding leagues (idempotent)"
           docker compose exec -T app php artisan prices:seed
 
+          echo "--- Fetching initial prices"
+          docker compose exec -T app php artisan prices:fetch
+
           echo "--- Health check"
-          sleep 5
+          sleep 3
           if curl -sf http://localhost:8000/api/v1/prices > /dev/null; then
             echo "Deployment successful!"
           else
