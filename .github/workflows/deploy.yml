@@ -1,0 +1,60 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '*.md'
+      - 'tests/**'
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Deploy
+        run: |
+          ssh root@${{ secrets.SERVER_HOST }} bash -s << 'REMOTE'
+          set -euo pipefail
+          APP_DIR="/opt/poe2-prices"
+          cd "$APP_DIR"
+
+          echo "--- Pulling latest code"
+          if [ ! -d .git ]; then
+            git clone https://github.com/StefanAlexandru-V/poe2-price-tracker.git .
+          else
+            git pull origin main
+          fi
+
+          echo "--- Building and starting containers"
+          docker compose build --quiet
+          docker compose up -d
+
+          echo "--- Running migrations"
+          docker compose exec -T app php artisan migrate --force
+
+          echo "--- Seeding leagues (idempotent)"
+          docker compose exec -T app php artisan prices:seed
+
+          echo "--- Health check"
+          sleep 5
+          if curl -sf http://localhost:8000/api/v1/prices > /dev/null; then
+            echo "Deployment successful!"
+          else
+            echo "FAILED — container logs:"
+            docker compose logs app --tail=20
+            exit 1
+          fi
+          REMOTE
