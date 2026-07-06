@@ -1,25 +1,25 @@
 # poe2-price-tracker
 
-PoE2 economy tracker. Fetches prices from poe.ninja every 10 minutes, stores history, shows trends.
+Tracks PoE2 item prices from poe.ninja. Fetches every 10 min, stores history in postgres, shows graphs.
 
-## Setup
+## Local dev
 
 ```bash
-composer install
 cp .env.example .env
-php artisan key:generate
-php artisan migrate
-php artisan prices:seed
-php artisan prices:fetch
-php artisan serve
+docker compose up -d
+docker compose exec app php artisan migrate
+docker compose exec app php artisan prices:seed
+docker compose exec app php artisan prices:fetch
 ```
+
+App at http://localhost:8000
 
 ## Commands
 
-```bash
-php artisan prices:fetch          # fetch latest prices
-php artisan prices:seed           # seed league data
-php artisan alerts:check          # check price alerts
+```
+prices:fetch       pull latest from poe.ninja
+prices:seed        seed league data
+alerts:check       fire notifications for triggered alerts
 ```
 
 ## API
@@ -27,17 +27,15 @@ php artisan alerts:check          # check price alerts
 ```
 GET /api/v1/prices?category=Currency&league=runes-of-aldur
 GET /api/v1/prices/{ninja_id}?limit=50
+GET /api/v1/prices/{ninja_id}/history?interval=hourly&days=7
 ```
 
-## Stack
+## Deploy
 
-- Laravel 13, PHP 8.3
-- SQLite (dev) / PostgreSQL (prod)
-- Redis for cache + queue
-- Tailwind (CDN) + Alpine.js
-- Chart.js for price graphs
-- poe.ninja API (no auth required)
+Push to `main` triggers GitHub Actions -> SSH to Hetzner VPS -> docker compose up.
 
-## Data source
+See `deploy/` for scripts.
 
-Prices from [poe.ninja](https://poe.ninja) — not affiliated with Grinding Gear Games.
+## Credits
+
+Price data from [poe.ninja](https://poe.ninja). Not affiliated with Grinding Gear Games.

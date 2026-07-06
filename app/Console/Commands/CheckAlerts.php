@@ -32,7 +32,7 @@ class CheckAlerts extends Command
 
             if (!$alert->isTriggered($price)) continue;
 
-            // don't spam — skip if triggered in the last hour
+            // don't spam, skip if triggered in the last hour
             if ($alert->last_triggered_at && $alert->last_triggered_at->gt(now()->subHour())) {
                 continue;
             }

@@ -34,7 +34,7 @@ sleep 3
 if curl -sf http://localhost:8000/api/v1/prices > /dev/null; then
     echo "Deployment successful!"
 else
-    echo "FAILED — container logs:"
+    echo "FAILED, container logs:"
     docker compose logs app --tail=30
     exit 1
 fi

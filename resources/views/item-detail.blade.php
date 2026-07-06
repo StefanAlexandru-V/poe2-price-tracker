@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $item->name . ' — Price History')
+@section('title', $item->name . ' - Price History')
 
 @section('content')
 <div class="flex flex-col gap-6">

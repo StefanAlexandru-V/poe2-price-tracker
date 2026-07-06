@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $category . ' — PoE2 Price Tracker')
+@section('title', $category . ' - PoE2 Price Tracker')
 
 @section('content')
 <div class="flex flex-col gap-6">
