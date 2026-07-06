@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\PriceHistoryResource;
+use App\Http\Resources\PriceResource;
 use App\Models\Item;
 use App\Models\League;
 use App\Models\PriceSnapshot;
@@ -27,20 +29,12 @@ class PriceController extends Controller
             $query->category($category);
         }
 
-        $items = $query->get()->map(fn ($item) => [
-            'id' => $item->ninja_id,
-            'name' => $item->name,
-            'category' => $item->category,
-            'price_divine' => $item->latestSnapshot?->divine_value,
-            'volume' => $item->latestSnapshot?->volume,
-            'change_7d' => $item->latestSnapshot?->change_7d,
-            'updated_at' => $item->latestSnapshot?->snapshot_at?->toIso8601String(),
-        ]);
+        $items = $query->get()->filter(fn ($item) => $item->latestSnapshot !== null);
 
         return response()->json([
             'league' => $league->name,
             'count' => $items->count(),
-            'items' => $items->values(),
+            'items' => PriceResource::collection($items),
         ]);
     }
 
@@ -60,20 +54,36 @@ class PriceController extends Controller
         $history = PriceSnapshot::forItem($item->id)
             ->orderByDesc('snapshot_at')
             ->limit($request->get('limit', 100))
-            ->get()
-            ->map(fn ($s) => [
-                'price' => $s->divine_value,
-                'volume' => $s->volume,
-                'at' => $s->snapshot_at->toIso8601String(),
-            ]);
+            ->get();
 
         return response()->json([
-            'item' => [
-                'id' => $item->ninja_id,
-                'name' => $item->name,
-                'category' => $item->category,
-            ],
-            'history' => $history,
+            'item' => new PriceResource($item->load('latestSnapshot')),
+            'history' => PriceHistoryResource::collection($history),
+        ]);
+    }
+
+    public function aggregated(Request $request, string $ninjaId): JsonResponse
+    {
+        $league = League::where('slug', $request->get('league'))->first()
+            ?? League::current();
+
+        $item = Item::where('ninja_id', $ninjaId)
+            ->where('league_id', $league->id)
+            ->first();
+
+        if (!$item) {
+            return response()->json(['error' => 'Item not found'], 404);
+        }
+
+        $interval = $request->get('interval', 'hourly'); // hourly or daily
+        $days = min((int) $request->get('days', 7), 30);
+
+        $history = PriceSnapshot::aggregated($item->id, $interval, $days);
+
+        return response()->json([
+            'item' => ['id' => $item->ninja_id, 'name' => $item->name],
+            'interval' => $interval,
+            'data' => $history,
         ]);
     }
 }

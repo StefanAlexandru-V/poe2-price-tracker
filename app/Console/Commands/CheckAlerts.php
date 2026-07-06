@@ -2,14 +2,14 @@
 
 namespace App\Console\Commands;
 
+use App\Events\PriceAlertTriggered;
 use App\Models\Alert;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 
 class CheckAlerts extends Command
 {
     protected $signature = 'alerts:check';
-    protected $description = 'Check active alerts against latest prices and notify users';
+    protected $description = 'Check active alerts against latest prices and dispatch notifications';
 
     public function handle(): int
     {
@@ -32,10 +32,12 @@ class CheckAlerts extends Command
 
             if (!$alert->isTriggered($price)) continue;
 
-            // TODO: send notification (email/database) instead of just logging
-            Log::info("[Alert] Triggered for {$alert->user->name}: {$alert->item->name} is {$price} div ({$alert->operator} {$alert->threshold})");
+            // don't spam — skip if triggered in the last hour
+            if ($alert->last_triggered_at && $alert->last_triggered_at->gt(now()->subHour())) {
+                continue;
+            }
 
-            $alert->update(['last_triggered_at' => now()]);
+            PriceAlertTriggered::dispatch($alert, $price);
             $triggered++;
         }
 
