@@ -10,7 +10,8 @@ if [ ! -d .git ]; then
     cp -r /tmp/poe2-src/. .
     rm -rf /tmp/poe2-src
 else
-    git pull origin main
+    git fetch origin main
+    git reset --hard origin/main
 fi
 
 echo "--- Building and starting containers"
