@@ -32,7 +32,8 @@ class DashboardController extends Controller
                 ->distinct()
                 ->pluck('category')
                 ->sort()
-                ->values();
+                ->values()
+                ->all();
         });
 
         $leagues = League::orderByDesc('is_current')->get();
